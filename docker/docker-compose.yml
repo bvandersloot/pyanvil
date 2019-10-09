@@ -1,0 +1,15 @@
+version: '3.1'
+
+services:
+
+  db:
+    build: 
+        context: .
+        dockerfile: Dockerfile-postgres-ip4r
+    restart: always
+    ports:
+        - "127.0.0.1:5432:5432"
+    volumes:
+        - ./data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: example
