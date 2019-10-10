@@ -1,24 +1,17 @@
 CREATE EXTENSION IF NOT EXISTS ip4r;
 
-create table bgp_announce (
+create table bgp_update (
 	id serial primary key,
+	kind char not null,
 	project varchar not null,
 	collector varchar not null,
 	time timestamptz not null,
 	peer_addr ipaddress not null,
 	peer_asn integer not null,
 	prefix iprange not null,
-	as_path varchar not null 
-);
-
-create table bgp_withdraw (
-	id serial primary key,
-	project varchar not null,
-	collector varchar not null,
-	time timestamptz not null,
-	peer_addr ipaddress not null,
-	peer_asn integer not null,
-	prefix iprange not null 
+	as_path varchar,
+	constraint withdraw_announce_constraint check ( (kind = 'A') or (kind = 'W')),
+	constraint announce_path_constraint check ( (kind = 'W') OR (as_path is not null))
 );
 
 create table bgp_rib (
@@ -32,12 +25,10 @@ create table bgp_rib (
 	as_path varchar not null 
 );
 
-CREATE INDEX i_announce_prefix ON bgp_announce USING gist (prefix);
-CREATE INDEX i_withdraw_prefix ON bgp_withdraw USING gist (prefix);
+CREATE INDEX i_update_prefix ON bgp_update USING gist (prefix);
 CREATE INDEX i_rib_prefix ON bgp_rib USING gist (prefix);
 
-CREATE INDEX i_announce_time ON bgp_announce(time);
-CREATE INDEX i_withdraw_time ON bgp_withdraw(time);
+CREATE INDEX i_update_time ON bgp_update(time);
 CREATE INDEX i_rib_time ON bgp_rib(time);
 
 CREATE TABLE bgp_metadata (
@@ -45,7 +36,7 @@ CREATE TABLE bgp_metadata (
 	collector varchar not null,
 	period integer not null,
 	rib_time timestamptz,
-	update_to timestamp,
+	update_to timestamptz,
 	PRIMARY KEY (project, collector)
 );
 
@@ -96,6 +87,7 @@ INSERT INTO bgp_metadata VALUES ('routeviews', 'route-views.chicago', 7200, null
 INSERT INTO bgp_metadata VALUES ('routeviews', 'route-views.napafrica', 7200, null, null);
 INSERT INTO bgp_metadata VALUES ('routeviews', 'route-views.flix', 7200, null, null);
 INSERT INTO bgp_metadata VALUES ('routeviews', 'route-views.chile', 7200, null, null);
+INSERT INTO bgp_metadata VALUES ('routeviews', 'route-views.wide', 7200, null, null);
 INSERT INTO bgp_metadata VALUES ('routeviews', 'route-views.amsix', 7200, null, null);
 */
 INSERT INTO bgp_metadata VALUES ('routeviews', 'route-views.wide', 7200, null, null);
