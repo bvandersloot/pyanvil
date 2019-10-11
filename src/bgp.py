@@ -11,22 +11,7 @@ import itertools
 
 from parse import *
 
-WINDOW = timedelta(hours=4)
-
-def get_time_range(args):
-    start = None
-    end = None
-    with open(args.input) as f:
-        for l in f:
-            obj = json.loads(l,  object_hook=date_parse_hook)
-            assert_schema(obj)
-            for i, identifier in enumerate(obj['identifiers']):
-                for j, address in enumerate(identifier['addresses']):
-                    if start == None or address['time'] < start:
-                        start = address['time']
-                    if end == None or address['time'] > end:
-                        end = address['time']
-    return (start-WINDOW, end)
+WINDOW = timedelta(days = 10)
 
 def get_ribs(collector, start, period):
     stream = BGPStream()
@@ -56,7 +41,7 @@ def get_updates(collector, start, end):
             while(elem):
                 if elem.type == 'A':
                     yield ('A', rec.project, rec.collector, datetime.utcfromtimestamp(rec.time).isoformat(), elem.peer_address, elem.peer_asn, elem.fields['prefix'], elem.fields['as-path'])
-                else:
+                elif elem.type == 'W':
                     yield ('W', rec.project, rec.collector, datetime.utcfromtimestamp(rec.time).isoformat(), elem.peer_address, elem.peer_asn, elem.fields['prefix'], None)
                 elem = rec.get_next_elem()
 

@@ -11,6 +11,6 @@ create table issued_certificates (
 	identifier varchar not null,
 	validation_client_address ipaddress,
 	validation_server_address ipaddress,
-	validation_time timestamptz
+	validation_time timestamptz not null
 );
 

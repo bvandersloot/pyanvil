@@ -23,6 +23,10 @@ def schema_helper(obj, key, path=''):
         print("missing field '{}' in input".format(path+key), file=sys.stderr)
         exit(0)
 
+def null_if_missing(obj, key):
+    if key not in obj:
+        obj[key] = None
+
 def assert_schema(obj):
     schema_helper(obj, 'serial')
     schema_helper(obj, 'not_before')
@@ -37,4 +41,20 @@ def assert_schema(obj):
         for j, address in enumerate(identifier['addresses']):
             schema_helper(address, 'client', 'identifiers[{}].addresses[{}].'.format(i,j))
             schema_helper(address, 'server', 'identifiers[{}].addresses[{}].'.format(i,j))
+            schema_helper(address, 'time', 'identifiers[{}].addresses[{}].'.format(i,j))
+
+def weak_assert_schema(obj):
+    schema_helper(obj, 'serial')
+    schema_helper(obj, 'not_before')
+    schema_helper(obj, 'not_after')
+    schema_helper(obj, 'public_key_fingerprint')
+    null_if_missing(obj, 'kid')
+    null_if_missing(obj, 'acme_client_address')
+    schema_helper(obj, 'identifiers')
+    for i, identifier in enumerate(obj['identifiers']):
+        schema_helper(identifier, 'identifier', 'identifiers[{}].'.format(i))
+        schema_helper(identifier, 'addresses', 'identifiers[{}].'.format(i))
+        for j, address in enumerate(identifier['addresses']):
+            null_if_missing(address, 'client')
+            null_if_missing(address, 'server')
             schema_helper(address, 'time', 'identifiers[{}].addresses[{}].'.format(i,j))
